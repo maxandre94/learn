@@ -9,3 +9,5 @@
 - git add : Préparer un fichier
 - git commit -m	: Sauvegarder un point
 - git log --oneline	: Voir l'historique
+- git remote add origin https://github.com/maxandre94/learn.git
+- git push -u origin master
