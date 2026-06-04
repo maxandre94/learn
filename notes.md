@@ -11,3 +11,4 @@
 - git log --oneline	: Voir l'historique
 - git remote add origin https://github.com/maxandre94/learn.git
 - git push -u origin master
+- git pull : Pour récupérer le code d'un collègue
