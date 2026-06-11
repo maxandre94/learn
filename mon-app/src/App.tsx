@@ -1,13 +1,15 @@
 import Compteur from "./components/Compteur"
 import ProfilCard from "./components/ProfilCard"
+import TodoApp from "./components/TodoApp"
 import UtilisateursGithub from "./components/UtilisateursGithub"
 
 const App = () => {
   return (
     <>
-      <ProfilCard nom="Adjoua Max andré" metier="Developpeur" githubUrl="https://github.com/maxandre94" technologies={["Git", "React", "Tailwind"]} />
+      {/* <ProfilCard nom="Adjoua Max andré" metier="Developpeur" githubUrl="https://github.com/maxandre94" technologies={["Git", "React", "Tailwind"]} />
       <Compteur />
-      <UtilisateursGithub />
+      <UtilisateursGithub /> */}
+      <TodoApp />
     </>
   )
 }
