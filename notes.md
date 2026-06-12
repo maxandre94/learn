@@ -1,3 +1,38 @@
+# Learn
+## Option 1 — GitHub (recommandé)
+Votre code est déjà sur GitHub. Sur le nouvel ordinateur :
+
+# Cloner le projet
+git clone https://github.com/maxandre94/learn.git
+
+# Installer les dépendances React
+cd learn/mon-app
+npm install
+
+# Installer les dépendances NestJS
+cd ../api
+npm install
+Puis installez les outils globaux :
+
+
+node --version        # vérifier Node.js (besoin de v24+)
+npm install -g typescript
+npm install -g @nestjs/cli
+
+
+## Option 2 — VS Code Live Share
+Si vous voulez travailler sur les deux ordinateurs en même temps (collaboration en temps réel), installez l'extension Live Share dans VS Code.
+
+Ce qu'il faut installer sur le nouvel ordinateur
+Node.js v24 LTS
+VS Code
+Git
+Extensions VS Code : Prettier, Live Preview
+L'option 1 est la bonne — c'est exactement comme ça que les développeurs travaillent en équipe. Commitez toujours avant de changer d'ordinateur.
+
+Maintenant créez api/src/taches/tache.interface.ts.
+
+
 # Notes de développement — Max
 
 ---
