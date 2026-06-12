@@ -212,3 +212,110 @@ plugins: [react(), tailwindcss()]
 ```css
 @import "tailwindcss";
 ```
+
+---
+
+## React — Concepts essentiels
+
+```tsx
+// Composant
+const MonComposant = ({ nom }: { nom: string }) => {
+    return <h1>{nom}</h1>
+}
+export default MonComposant
+
+// useState
+const [valeur, setValeur] = useState<string>("")
+
+// Valeur dérivée (pas un state !)
+const total = items.reduce((acc, x) => acc + x.prix, 0)
+
+// useEffect — effets de bord uniquement (API, timers)
+useEffect(() => {
+    const fetchData = async () => {
+        const res = await fetch("url")
+        const data = await res.json()
+        setData(data)
+    }
+    fetchData()
+}, []) // [] = exécuté une seule fois au montage
+
+// Règles fondamentales
+// 1. Ne jamais muter le state — toujours créer un nouvel objet
+//    ❌ tab.push(x)
+//    ✅ setTab([...tab, x])
+// 2. Ne stocker en state que ce qu'on ne peut pas calculer
+// 3. key= sur l'élément racine du .map()
+// 4. className= au lieu de class= en JSX
+// 5. Un seul élément racine → utiliser <> </> si besoin
+```
+
+**Événements :**
+```tsx
+<button onClick={() => maFonction()}>Clic</button>
+<input onChange={(e) => setTexte(e.target.value)} value={texte} />
+<input type="checkbox" onChange={() => toggle(id)} checked={complete} />
+```
+
+---
+
+## TypeScript Avancé
+
+```ts
+// Generics
+const dernier = <T>(tab: T[]): T | undefined => tab.at(-1)
+
+interface ApiResponse<T> {
+    data: T
+    success: boolean
+    message: string
+}
+
+// Utility Types
+type UserPublic    = Omit<User, "motDePasse">      // supprimer des propriétés
+type UserPartial   = Partial<User>                  // toutes optionnelles (PATCH)
+type UserResume    = Pick<User, "id" | "nom">       // garder seulement certaines
+
+// Type Guards
+if ("race" in animal) { /* c'est un Chien */ }
+```
+
+---
+
+## NestJS — Commandes
+
+```bash
+npm install -g @nestjs/cli
+nest new nom-projet           # créer un projet
+cd nom-projet
+npm run start:dev             # démarrer en mode développement
+
+# Générer des fichiers
+nest generate module nom
+nest generate controller nom
+nest generate service nom
+```
+
+**Architecture :**
+```
+main.ts           → point d'entrée, démarre le serveur (port 3000)
+app.module.ts     → module racine, importe tous les modules
+nom/
+  nom.module.ts      → déclare controller + service
+  nom.controller.ts  → reçoit les requêtes HTTP (@Get, @Post...)
+  nom.service.ts     → logique métier
+```
+
+**Décorateurs essentiels :**
+```ts
+@Controller('taches')   // préfixe de route
+@Get()                  // GET /taches
+@Get(':id')             // GET /taches/1
+@Post()                 // POST /taches
+@Put(':id')             // PUT /taches/1
+@Delete(':id')          // DELETE /taches/1
+
+@Body()                 // récupérer le body de la requête
+@Param('id')            // récupérer un paramètre de route
+@Injectable()           // classe injectable (service)
+```
