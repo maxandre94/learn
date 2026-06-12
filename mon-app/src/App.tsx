@@ -1,4 +1,5 @@
 import Compteur from "./components/Compteur"
+import Panier from "./components/PanierApp"
 import ProfilCard from "./components/ProfilCard"
 import TodoApp from "./components/TodoApp"
 import UtilisateursGithub from "./components/UtilisateursGithub"
@@ -9,7 +10,8 @@ const App = () => {
       {/* <ProfilCard nom="Adjoua Max andré" metier="Developpeur" githubUrl="https://github.com/maxandre94" technologies={["Git", "React", "Tailwind"]} />
       <Compteur />
       <UtilisateursGithub /> */}
-      <TodoApp />
+      {/* <TodoApp /> */}
+      <Panier />
     </>
   )
 }
