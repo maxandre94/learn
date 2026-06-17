@@ -354,3 +354,118 @@ nom/
 @Param('id')            // récupérer un paramètre de route
 @Injectable()           // classe injectable (service)
 ```
+
+---
+
+## NestJS — Validation (DTO + class-validator)
+
+```bash
+npm install class-validator class-transformer
+```
+
+**DTO (Data Transfer Object) — décrit et valide les données entrantes :**
+```ts
+// src/taches/dto/create-tache.dto.ts
+import { IsNotEmpty, IsString } from "class-validator";
+
+export class CreateTacheDto {
+    @IsString()
+    @IsNotEmpty()
+    titre!: string;   // "!" = assertion d'assignation définitive (TS strict)
+}
+```
+
+**Utilisation dans le controller :**
+```ts
+@Post()
+create(@Body() createTacheDto: CreateTacheDto): Tache {
+  return this.tachesService.create(createTacheDto.titre);
+}
+```
+
+**Activer la validation globalement (main.ts) :**
+```ts
+import { ValidationPipe } from '@nestjs/common';
+
+app.useGlobalPipes(new ValidationPipe());
+```
+→ Sans ça, les décorateurs du DTO (`@IsString()`, `@IsNotEmpty()`...) ne sont que des métadonnées inertes : rien ne les vérifie à l'exécution.
+
+**Import de type pour une interface utilisée dans une méthode décorée :**
+```ts
+import type { Tache } from './tache.interface';
+```
+→ Nécessaire car `emitDecoratorMetadata` (NestJS) tente de référencer les types des méthodes décorées (`@Post()`, etc.), mais une `interface` n'existe pas à l'exécution. `import type` clarifie qu'il s'agit uniquement d'un type, jamais d'une valeur.
+
+---
+
+## NestJS — Mise à jour partielle (PATCH)
+
+**DTO avec propriétés optionnelles (`@IsOptional()`) :**
+```ts
+import { IsBoolean, IsOptional, IsString } from "class-validator";
+
+export class UpdateTacheDto {
+    @IsOptional()
+    @IsString()
+    titre?: string;
+
+    @IsOptional()
+    @IsBoolean()
+    complete?: boolean;
+}
+```
+
+**PUT vs PATCH :**
+- `PUT` = remplacer entièrement la ressource (toutes les propriétés attendues)
+- `PATCH` = mettre à jour partiellement (seulement les champs envoyés) → adapté à un DTO avec propriétés optionnelles
+
+**Service — fusion immuable sans effet de bord :**
+```ts
+update(id: number, dto: UpdateTacheDto): Tache | undefined {
+  const searchTache = this.taches.find((tache) => tache.id === id);
+  if (!searchTache) return undefined;          // guard clause
+
+  const updateTache = {
+    ...searchTache,
+    titre: dto.titre ?? searchTache.titre,       // garde l'ancienne valeur si absent
+    complete: dto.complete ?? searchTache.complete,
+  };
+
+  this.taches = this.taches.map((tache) =>
+    tache.id === id ? updateTache : tache         // .map() pur, sans effet de bord
+  );
+  return updateTache;
+}
+```
+- `??` garde la valeur existante si le champ n'est pas fourni dans le DTO (mise à jour partielle).
+- Le callback de `.map()` ne doit jamais avoir d'effet de bord (ex: assigner une variable externe) — il doit seulement retourner une valeur transformée.
+- Guard clause (`if (!x) return ...`) = sortir tôt plutôt qu'imbriquer la logique dans un `if/else`.
+
+**Controller :**
+```ts
+@Patch(':id')
+update(@Param('id') id: string, @Body() updateTacheDto: UpdateTacheDto): Tache | undefined {
+  return this.tachesService.update(+id, updateTacheDto);
+}
+```
+
+---
+
+## NestJS — Convention REST sur DELETE
+
+Une suppression réussie ne doit **rien retourner** (pas la liste complète, pas l'élément supprimé) — le client n'a pas besoin de retélécharger des données qu'il a déjà.
+
+```ts
+// service
+remove(id: number): void {
+  this.taches = this.taches.filter((tache) => tache.id !== id);
+}
+
+// controller
+@Delete(':id')
+@HttpCode(204)               // 204 No Content = code HTTP conventionnel pour DELETE réussi
+remove(@Param('id') id: string): void {
+  return this.tachesService.remove(+id);
+}
+```

@@ -1,28 +1,36 @@
-import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post } from '@nestjs/common';
 import { TachesService } from './taches.service';
-import { Tache } from './tache.interface';
+import type { Tache } from './tache.interface';
+import { CreateTacheDto } from './dto/create-tache.dto';
+import { UpdateTacheDto } from './dto/update-tache.dto';
 
 @Controller('taches')
 export class TachesController {
   constructor(private readonly tachesService: TachesService) {}
 
   @Get()
-  findAll(): Tache[] {
-    return this.tachesService.findAll();
+  async findAll(): Promise<Tache[]> {
+    return await this.tachesService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string): Tache | undefined {
-    return this.tachesService.findOne(+id);
+  async findOne(@Param('id') id: string): Promise<Tache | null> {
+    return await this.tachesService.findOne(+id);
   }
 
   @Post()
-  create(@Body('titre') titre: string): Tache | undefined {
-    return this.tachesService.create(titre);
+  async create(@Body() createTacheDto: CreateTacheDto): Promise<Tache> {
+    return await this.tachesService.create(createTacheDto.titre);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.tachesService.remove(+id);
+  @HttpCode(204)
+  async remove(@Param('id') id: string): Promise<void> {
+    return await this.tachesService.remove(+id);
+  }
+
+  @Patch(':id')
+  async update(@Param('id') id: string, @Body() updateTacheDto: UpdateTacheDto): Promise<Tache | null> {
+    return await this.tachesService.update(+id, updateTacheDto)
   }
 }

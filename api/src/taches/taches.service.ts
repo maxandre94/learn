@@ -1,29 +1,29 @@
 import { Injectable } from '@nestjs/common';
-import { Tache } from './tache.interface';
+import type { Tache } from './tache.interface';
+import { UpdateTacheDto } from './dto/update-tache.dto';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class TachesService {
-    private taches: Tache[] = [
-        {id: 1, titre: "laver linge", complete: false},
-        {id: 2, titre: "acheter savon", complete: true}
-    ]
+  constructor(private readonly prisma: PrismaService) {}
 
-    findAll(): Tache[] {
-        return this.taches;
-    }
+  async findAll(): Promise<Tache[]> {
+    return this.prisma.tache.findMany();
+  }
 
-    findOne(id: number): Tache | undefined {
-        return this.taches.find((tache) => tache.id===id)
-    }
+  async findOne(id: number): Promise<Tache | null> {
+    return this.prisma.tache.findUnique({ where: { id } });
+  }
 
-    create(titre: string): Tache {
-        const tache = {id: Date.now(), titre: titre, complete: false}
-        this.taches.push(tache)
-        return tache;
-    }
+  async create(titre: string): Promise<Tache> {
+    return this.prisma.tache.create({ data: { titre } });
+  }
 
-    remove(id: number) {
-        this.taches = this.taches.filter((tache) => tache.id!==id)
-    }
+  async remove(id: number): Promise<void> {
+    await this.prisma.tache.delete({ where: { id } });
+  }
 
+  async update(id: number, dto: UpdateTacheDto): Promise<Tache | null> {
+    return this.prisma.tache.update({ where: { id }, data: { ...dto } });
+  }
 }
