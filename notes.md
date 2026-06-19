@@ -506,6 +506,46 @@ volumes:
 - **Volume** : stockage persistant — sans ça, les données disparaissent à chaque `docker compose down`
 - **Port** `"5432:5432"` = `hôte:conteneur` — expose le port du conteneur vers votre machine
 - Ne pas oublier d'appliquer les migrations sur la nouvelle base : `npx prisma migrate dev`
+- Pour appliquer les migrations depuis l'intérieur d'un conteneur : `docker compose exec api npx prisma migrate deploy`
+
+---
+
+## Docker — Containeriser une API NestJS
+
+**Dockerfile :**
+```dockerfile
+FROM node:24-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+RUN npx prisma generate
+RUN npm run build
+EXPOSE 3000
+CMD ["node", "dist/src/main"]
+```
+→ `COPY package*.json` avant `COPY . .` = cache Docker optimisé (npm install rejoué seulement si package.json change)
+→ `prisma generate` après `COPY . .` pour que schema.prisma soit disponible
+
+**`.dockerignore` :**
+```
+node_modules
+dist
+.env
+```
+
+**Migration automatique au démarrage (docker-compose.yml) :**
+```yaml
+command: sh -c "npx prisma migrate deploy && node dist/src/main"
+```
+→ `migrate deploy` = applique les migrations existantes (production), sans en créer de nouvelle
+→ `migrate dev` = développement uniquement (crée + applique les migrations)
+
+**Communication entre conteneurs :** utiliser le nom du service Docker comme hôte :
+```
+postgresql://postgres:root@ma-base-de-donnees:5432/taches_db
+```
+→ `ma-base-de-donnees` = nom du service dans docker-compose.yml, résolu automatiquement par Docker
 
 **Import de type pour une interface utilisée dans une méthode décorée :**
 ```ts
