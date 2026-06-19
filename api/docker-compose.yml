@@ -12,5 +12,16 @@ services:
     volumes:
       - donnees-postgres:/var/lib/postgresql/data
 
+  api:
+    build: .
+    container_name: api
+    ports: 
+      - "3000:3000"
+    environment:
+      DATABASE_URL: "postgresql://postgres:root@ma-base-de-donnees:5432/taches_db?schema=public"
+    depends_on:
+      - ma-base-de-donnees
+    command: sh -c "npx prisma migrate deploy && node dist/src/main"
+
 volumes:
   donnees-postgres:
