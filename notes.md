@@ -391,6 +391,122 @@ app.useGlobalPipes(new ValidationPipe());
 ```
 → Sans ça, les décorateurs du DTO (`@IsString()`, `@IsNotEmpty()`...) ne sont que des métadonnées inertes : rien ne les vérifie à l'exécution.
 
+---
+
+## NestJS + Prisma + PostgreSQL
+
+```bash
+npm install prisma --save-dev
+npm install @prisma/client @prisma/adapter-pg pg
+npm install --save-dev @types/pg dotenv
+npx prisma init           # génère prisma/schema.prisma + .env + prisma.config.ts
+npx prisma migrate dev --name init   # crée la table en base + génère le client
+npx prisma generate       # régénère le client après changement de schéma
+```
+
+**schema.prisma :**
+```prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Tache {
+  id       Int     @id @default(autoincrement())
+  titre    String
+  complete Boolean @default(false)
+}
+```
+
+**`.env` (ne jamais committer) :**
+```
+DATABASE_URL="postgresql://postgres:MOT_DE_PASSE@localhost:5432/taches_db?schema=public"
+```
+
+**`main.ts` — charger les variables d'environnement en premier :**
+```ts
+import 'dotenv/config';   // doit être la 1ère ligne
+```
+
+**PrismaService (src/prisma/prisma.service.ts) :**
+```ts
+import { Injectable, OnModuleInit } from '@nestjs/common';
+import { PrismaClient } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+
+@Injectable()
+export class PrismaService extends PrismaClient implements OnModuleInit {
+  constructor() {
+    const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
+    super({ adapter });
+  }
+  onModuleInit(): Promise<void> {
+    return this.$connect();
+  }
+}
+```
+→ Prisma 7 nécessite un driver adapter (`@prisma/adapter-pg`) pour les connexions directes à PostgreSQL.
+
+**PrismaModule (src/prisma/prisma.module.ts) :**
+```ts
+@Module({ providers: [PrismaService], exports: [PrismaService] })
+export class PrismaModule {}
+```
+→ `exports` rend `PrismaService` injectable dans les autres modules.
+
+**Utilisation dans un service :**
+```ts
+constructor(private readonly prisma: PrismaService) {}
+
+findAll()           → this.prisma.tache.findMany()
+findOne(id)         → this.prisma.tache.findUnique({ where: { id } })
+create(titre)       → this.prisma.tache.create({ data: { titre } })
+update(id, dto)     → this.prisma.tache.update({ where: { id }, data: { ...dto } })
+remove(id)          → await this.prisma.tache.delete({ where: { id } })
+```
+→ Toutes les méthodes Prisma sont async → `Promise<T>` partout dans service et controller.
+
+---
+
+## Docker — Commandes essentielles
+
+```bash
+docker compose up -d        # démarrer les conteneurs en arrière-plan
+docker compose down         # arrêter et supprimer les conteneurs
+docker compose down -v      # idem + supprimer les volumes (reset BDD)
+docker compose logs -f      # voir les logs en temps réel
+docker ps                   # lister les conteneurs en cours d'exécution
+```
+
+**docker-compose.yml — PostgreSQL uniquement :**
+```yaml
+services:
+  ma-base-de-donnees:
+    image: postgres:16
+    container_name: db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: MOT_DE_PASSE
+      POSTGRES_DB: taches_db
+    ports:
+      - "5432:5432"      # port_hôte:port_conteneur
+    volumes:
+      - donnees-postgres:/var/lib/postgresql/data   # persistance des données
+
+volumes:
+  donnees-postgres:
+```
+
+**Concepts clés :**
+- **Image** : modèle figé (ex: `postgres:16` depuis Docker Hub)
+- **Conteneur** : instance en cours d'exécution d'une image
+- **Volume** : stockage persistant — sans ça, les données disparaissent à chaque `docker compose down`
+- **Port** `"5432:5432"` = `hôte:conteneur` — expose le port du conteneur vers votre machine
+- Ne pas oublier d'appliquer les migrations sur la nouvelle base : `npx prisma migrate dev`
+
 **Import de type pour une interface utilisée dans une méthode décorée :**
 ```ts
 import type { Tache } from './tache.interface';
