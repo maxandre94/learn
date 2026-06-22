@@ -547,6 +547,83 @@ postgresql://postgres:root@ma-base-de-donnees:5432/taches_db
 ```
 → `ma-base-de-donnees` = nom du service dans docker-compose.yml, résolu automatiquement par Docker
 
+---
+
+## NestJS — Authentification JWT
+
+```bash
+npm install @nestjs/jwt @nestjs/passport passport passport-jwt bcrypt
+npm install --save-dev @types/passport-jwt @types/bcrypt
+```
+
+**Flux :**
+1. `POST /auth/inscription` → hash du mot de passe (bcrypt) → création en base
+2. `POST /auth/connexion` → vérification bcrypt → retour d'un token JWT signé
+3. Routes protégées → client envoie `Authorization: Bearer TOKEN` → Guard vérifie
+
+**AuthService :**
+```ts
+// Inscription
+const existe = await this.prisma.utilisateur.findUnique({ where: { email } });
+if (existe) throw new ConflictException('Email déjà utilisé');
+const hash = await bcrypt.hash(dto.motDePasse, 10);
+await this.prisma.utilisateur.create({ data: { email, motDePasse: hash } });
+
+// Connexion
+const user = await this.prisma.utilisateur.findUnique({ where: { email } });
+if (!user) throw new UnauthorizedException();
+const valide = await bcrypt.compare(dto.motDePasse, user.motDePasse);
+if (!valide) throw new UnauthorizedException();
+return { access_token: this.jwtService.sign({ sub: user.id, email: user.email }) };
+```
+
+**JwtStrategy (src/auth/jwt.strategy.ts) :**
+```ts
+@Injectable()
+export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
+  constructor() {
+    super({
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      secretOrKey: process.env.JWT_SECRET!,
+    });
+  }
+  validate(payload: { sub: number; email: string }) {
+    return { id: payload.sub, email: payload.email }; // devient req.user
+  }
+}
+```
+
+**JwtAuthGuard (src/auth/jwt.guard.ts) :**
+```ts
+@Injectable()
+export class JwtAuthGuard extends AuthGuard('jwt') {}
+```
+
+**Protéger une route :**
+```ts
+@UseGuards(JwtAuthGuard)
+@Get()
+findAll() { ... }
+```
+
+**AuthModule :**
+```ts
+providers: [AuthService, JwtStrategy],
+imports: [
+  PrismaModule,
+  JwtModule.register({ secret: process.env.JWT_SECRET, signOptions: { expiresIn: '7d' } }),
+]
+```
+
+**`.env` :**
+```
+JWT_SECRET=une_chaine_tres_longue_et_secrete
+```
+
+**Rappel providers vs imports :**
+- `providers` = classes à instancier dans ce module (services, stratégies, guards)
+- `imports` = autres modules dont on veut les exports (ex: PrismaModule pour PrismaService)
+
 **Import de type pour une interface utilisée dans une méthode décorée :**
 ```ts
 import type { Tache } from './tache.interface';
