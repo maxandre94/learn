@@ -1,13 +1,15 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { TachesService } from './taches.service';
 import type { Tache } from './tache.interface';
 import { CreateTacheDto } from './dto/create-tache.dto';
 import { UpdateTacheDto } from './dto/update-tache.dto';
+import { JwtAuthGuard } from '../auth/jwt.guard';
 
 @Controller('taches')
 export class TachesController {
   constructor(private readonly tachesService: TachesService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Get()
   async findAll(): Promise<Tache[]> {
     return await this.tachesService.findAll();
