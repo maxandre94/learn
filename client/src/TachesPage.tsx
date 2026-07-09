@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+const VITE_API_URL = import.meta.env.VITE_API_URL;
 
 type Tache = {
   id: number;
@@ -14,7 +15,7 @@ const TachesPage = () => {
     const token = localStorage.getItem("token") ?? "";
     const fetchData = async () => {
       try {
-        const res = await fetch("http://localhost:3000/taches", {
+        const res = await fetch(`${VITE_API_URL}/taches`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
@@ -32,7 +33,7 @@ const TachesPage = () => {
       const token = localStorage.getItem("token");
       const fetchData = async () => {
         try {
-          const res = await fetch("http://localhost:3000/taches", {
+          const res = await fetch(`${VITE_API_URL}/taches`, {
             method: "POST",
             headers: {
               Authorization: `Bearer ${token}`,
@@ -59,7 +60,7 @@ const TachesPage = () => {
       const token = localStorage.getItem("token");
       const fetchData = async () => {
         try {
-          await fetch(`http://localhost:3000/taches/${id}`, {
+          await fetch(`${VITE_API_URL}/taches/${id}`, {
             method: "DELETE",
             headers: { Authorization: `Bearer ${token}` },
           });

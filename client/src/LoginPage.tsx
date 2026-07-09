@@ -1,4 +1,5 @@
 import { useState } from "react";
+const VITE_API_URL = import.meta.env.VITE_API_URL;
 
 const LoginPage = ({ onConnexion }: { onConnexion: (token: string) => void }) => {
 
@@ -7,7 +8,7 @@ const LoginPage = ({ onConnexion }: { onConnexion: (token: string) => void }) =>
 
   const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
-    const res = await fetch("http://localhost:3000/auth/connexion", {
+    const res = await fetch(`${VITE_API_URL}/auth/connexion`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, motDePasse })
