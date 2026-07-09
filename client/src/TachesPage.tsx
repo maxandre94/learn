@@ -8,9 +8,10 @@ type Tache = {
 
 const TachesPage = () => {
   const [taches, setTaches] = useState<Tache[]>([]);
+  const [nouveauTitre, setNouveauTitre] = useState("");
 
   useEffect(() => {
-    const token = localStorage.getItem("token") ?? '';
+    const token = localStorage.getItem("token") ?? "";
     const fetchData = async () => {
       try {
         const res = await fetch("http://localhost:3000/taches", {
@@ -26,11 +27,68 @@ const TachesPage = () => {
     fetchData();
   }, []);
 
+  const handleAjouter = (titre: string) => {
+    if (titre !== "") {
+      const token = localStorage.getItem("token");
+      const fetchData = async () => {
+        try {
+          const res = await fetch("http://localhost:3000/taches", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ titre: nouveauTitre }),
+          });
+          const nouvelleTache = await res.json();
+
+          if (nouvelleTache) {
+            setTaches([...taches, nouvelleTache]);
+            setNouveauTitre("");
+          }
+        } catch (err) {
+          console.error("Une erreur est survenue :", err);
+        }
+      };
+      fetchData();
+    }
+  };
+
+  const handleSupprimer = (id: number) => {
+    if (id) {
+      const token = localStorage.getItem("token");
+      const fetchData = async () => {
+        try {
+          await fetch(`http://localhost:3000/taches/${id}`, {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${token}` },
+          });
+
+          setTaches(taches.filter((t) => t.id !== id));
+        } catch (err) {
+          console.error("Une erreur est survenue :", err);
+        }
+      };
+      fetchData();
+    }
+  };
+
   return (
     <div>
+      <input
+        type="text"
+        value={nouveauTitre}
+        onChange={(e) => setNouveauTitre(e.target.value)}
+      />
+      <button onClick={() => handleAjouter(nouveauTitre)}>Ajouter</button>
       <ul>
         {taches.map((tache: Tache) => (
-          <li key={tache.id}> {tache.titre} </li>
+          <li key={tache.id}>
+            {" "}
+            {tache.titre}
+            {" "}
+            <button onClick={() => handleSupprimer(tache.id)}> X </button>
+          </li>
         ))}
       </ul>
     </div>
