@@ -75,7 +75,7 @@ const TachesPage = () => {
   };
 
   return (
-    <div>
+    <div className="flex justify-center bg-gray-500">
       <input
         type="text"
         value={nouveauTitre}

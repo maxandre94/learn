@@ -19,22 +19,32 @@ const LoginPage = ({ onConnexion }: { onConnexion: (token: string) => void }) =>
   };
 
   return (
-    <div>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="email"
-        />
-        <input
-          type="password"
-          value={motDePasse}
-          onChange={(e) => setMotDePasse(e.target.value)}
-          placeholder="mot de passe"
-        />
-        <button type="submit">Se connecter</button>
-      </form>
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <div className="bg-white p-8 rounded-xl shadow-md w-full max-w-md">
+        <h1 className="text-2xl font-bold mb-6 text-center">Connexion</h1>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <input
+            type="text"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Email"
+            className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <input
+            type="password"
+            value={motDePasse}
+            onChange={(e) => setMotDePasse(e.target.value)}
+            placeholder="Mot de passe"
+            className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <button
+            type="submit"
+            className="bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+          >
+            Se connecter
+          </button>
+        </form>
+      </div>
     </div>
   );
 };
