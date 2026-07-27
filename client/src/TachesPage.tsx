@@ -20,7 +20,7 @@ const TachesPage = () => {
         });
         const data = await res.json();
 
-        if (data) setTaches(data);
+        if (Array.isArray(data)) setTaches(data);
       } catch (err) {
         console.error("Une erreur est survenue :", err);
       }
@@ -75,20 +75,37 @@ const TachesPage = () => {
   };
 
   return (
-    <div className="flex justify-center bg-gray-500">
+    <div className="min-h-screen bg-gray-100">
+      <div className="flex items-center justify-center">
+        <h1 className="font-bold text-2xl">Mes tâches</h1>
+      </div>
       <input
+        className="border mx-2 rounded-2xl bg-white px-2"
         type="text"
         value={nouveauTitre}
         onChange={(e) => setNouveauTitre(e.target.value)}
       />
-      <button onClick={() => handleAjouter(nouveauTitre)}>Ajouter</button>
-      <ul>
+      <button
+        className="border mx-2 px-2 rounded-2xl bg-white hover:bg-gray-300 hover:cursor-pointer"
+        onClick={() => handleAjouter(nouveauTitre)}
+      >
+        Ajouter
+      </button>
+      <ul className="my-2 max-w-2xl mx-auto">
         {taches.map((tache: Tache) => (
-          <li key={tache.id}>
+          <li
+            className="border px-2 bg-white rounded-lg shadow p-4 mb-2"
+            key={tache.id}
+          >
             {" "}
-            {tache.titre}
-            {" "}
-            <button onClick={() => handleSupprimer(tache.id)}> X </button>
+            {tache.titre}{" "}
+            <button
+              className="hover:cursor-pointer hover:text-red-500"
+              onClick={() => handleSupprimer(tache.id)}
+            >
+              {" "}
+              X{" "}
+            </button>
           </li>
         ))}
       </ul>
