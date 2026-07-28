@@ -7,16 +7,16 @@ import { PrismaService } from '../prisma/prisma.service';
 export class TachesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll(): Promise<Tache[]> {
-    return this.prisma.tache.findMany();
+  async findAll(utilisateurId: number): Promise<Tache[]> {
+    return this.prisma.tache.findMany({ where: { utilisateurId } });
   }
 
   async findOne(id: number): Promise<Tache | null> {
     return this.prisma.tache.findUnique({ where: { id } });
   }
 
-  async create(titre: string): Promise<Tache> {
-    return this.prisma.tache.create({ data: { titre } });
+  async create(titre: string, utilisateurId: number): Promise<Tache> {
+    return this.prisma.tache.create({ data: { titre, utilisateurId } });
   }
 
   async remove(id: number): Promise<void> {

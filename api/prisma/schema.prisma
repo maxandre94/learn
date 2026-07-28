@@ -12,13 +12,16 @@ datasource db {
 }
 
 model Tache {
-  id       Int     @id @default(autoincrement())
-  titre    String
-  complete Boolean @default(false)
+  id            Int         @id @default(autoincrement())
+  utilisateurId Int
+  utilisateur   Utilisateur @relation(fields: [utilisateurId], references: [id])
+  titre         String
+  complete      Boolean     @default(false)
 }
 
 model Utilisateur {
-  id         Int    @id @default(autoincrement())
-  email      String @unique
+  id         Int     @id @default(autoincrement())
+  taches     Tache[]
+  email      String  @unique
   motDePasse String
 }
