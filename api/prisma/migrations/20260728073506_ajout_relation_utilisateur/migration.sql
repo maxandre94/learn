@@ -4,6 +4,9 @@
   - Added the required column `utilisateurId` to the `Tache` table without a default value. This is not possible if the table is not empty.
 
 */
+-- Vider la table car la nouvelle colonne est obligatoire
+DELETE FROM "Tache";
+
 -- AlterTable
 ALTER TABLE "Tache" ADD COLUMN     "utilisateurId" INTEGER NOT NULL;
 
